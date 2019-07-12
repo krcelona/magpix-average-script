@@ -1,0 +1,1 @@
+# magpix-average-script
