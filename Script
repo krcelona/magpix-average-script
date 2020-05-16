@@ -1,0 +1,69 @@
+#! /usr/bin/env python
+
+import csv
+import numpy as np
+
+#This script will read a csv file containing median data of replicate serum samples 
+#and average the replicates and produce an output file of averaged median data
+
+#create empty lists and an empty dictionary
+data = []
+columnnames = []
+dictionary = {}
+linecount = 0
+
+#create an output file and allow user preference for name. Put output file in .csv format
+outfilename = raw_input("Type output filename: ")
+fout = open(outfilename, 'w')
+
+#user input for what file you want to use. Type it in exactly how it is written
+filename = raw_input("Type input filename: ")
+#open file. 'rU' stands for "universal newlines" and seems to be a python 2 vs 3 thing...
+with open(filename, 'rU') as f:
+#use csv module and seperate file with commas. Can also change this to tabs
+    csv_reader = csv.reader(f, delimiter=',')
+    linecount = 0 
+    
+#This for loop reads line by line and strips invisible characters, and splits on the commas 
+#We append the header line to the output file  
+    for row in f:
+        rows = row.strip('\n').split(',')
+        if linecount ==0:
+            columnnames.append(rows)
+            fout.write(row)
+            #the below is another option on how to write out the info
+#            fout.write("\t".join(row.split(",")))
+        if linecount >=1:
+            data.append(rows)
+        linecount +=1
+        
+#This for loop creates a dictionary of key:2 list value pairs
+for lines in data:
+    if lines[0] not in dictionary:
+        dictionary[lines[0]] = [lines[1:]]
+    else:
+        dictionary[lines[0]].append(lines[1:])
+    
+    
+#print data
+#print columnnames
+#print dictionary
+
+#create a function to calculate the means of each key in the dictionary
+def calc_means(vl):
+    list= []
+    for i in range(len(vl[0])):
+        vals = [float(x[i]) for x in vl]
+        list.append(np.mean(vals))
+    return list
+
+
+
+#using the function to calculate the mean and writing out the values
+for k,v in dictionary.iteritems():
+    m = calc_means(v)
+    outputstring2 = "%s,%s\n" %(k, ",".join([str(x) for x in m]))
+    fout.write(outputstring2)
+
+fout.close()
+
